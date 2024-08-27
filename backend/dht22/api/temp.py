@@ -3,32 +3,39 @@ import time
 import adafruit_dht
 import board
 
-def get_data():
-    DHT_SENSOR = adafruit_dht.DHT22(board.D4)
-    
-
+def get_data():  
     data = {}
     temp_sum = 0
     humidity_sum = 0
     counter = 1
 
-    while (counter <= 5):
-        temperature = DHT_SENSOR.temperature
-        humidity = DHT_SENSOR.humidity
-        if humidity is not None and temperature is not None:
-            print("Temp={0:0.1f}C Humidity={1:0.1f}%".format(temperature, humidity))
+    try:
+        # initialize sensor
+        DHT_SENSOR = adafruit_dht.DHT22(board.D4)
+        while (counter <= 5):
+            try:
+                temperature = DHT_SENSOR.temperature
+                humidity = DHT_SENSOR.humidity
+                if humidity is not None and temperature is not None:
+                    print("Temp={0:0.1f}C Humidity={1:0.1f}%".format(temperature, humidity))
 
-            # add data to dict
-            data[counter] = {
-                'temperature': temperature,
-                'humidity': humidity
-            }
-            temp_sum += temperature
-            humidity_sum += humidity
-        else:
-            print("Sensor failure. Check wiring.")
-        time.sleep(3)
-        counter += 1
+                    # add data to dict
+                    data[counter] = {
+                        'temperature': temperature,
+                        'humidity': humidity
+                    }
+                    temp_sum += temperature
+                    humidity_sum += humidity
+                else:
+                    print("Sensor failure. Check wiring.")
+            except RuntimeError as error:
+                print(f'RuntimeError: {error}') 
+                continue           
+            time.sleep(1)
+            counter += 1
+    finally:
+        # free sensor
+        DHT_SENSOR.exit()
 
 
     # calculate averages
